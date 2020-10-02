@@ -1,22 +1,23 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.jt400</groupId>
 	<artifactId>pool-datasource</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
-	<description>A DataSource data encapsulates AS400JDBCConnectionPool and AS400JDBCConnectionPoolDataSource</description>
+	<description>A DataSource that encapsulates AS400JDBCConnectionPool and AS400JDBCConnectionPoolDataSource</description>
 
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<jt400.version>9.3</jt400.version>
+		<jt400.version>10.4</jt400.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>net.sf.jt400</groupId>
-			<artifactId>jt400</artifactId>
+			<artifactId>jt400-jdk8</artifactId>
 			<version>${jt400.version}</version>
 		</dependency>
 	</dependencies>

@@ -1,4 +1,4 @@
-package com.ibm.as400.access;
+package io.github.jt400.access;
 
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -9,35 +9,26 @@ import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
-public class AS400ConnectionPoolDataSource extends AS400ConnectionPoolAdapter implements DataSource {
+import com.ibm.as400.access.AS400JDBCConnectionPool;
+import com.ibm.as400.access.AS400JDBCConnectionPoolDataSource;
+import com.ibm.as400.access.AS400JDBCDataSource;
+import com.ibm.as400.access.ConnectionPoolException;
 
-	private static final int DEFAULT_POOL_SIZE = 10;
+public class AS400ConnectionPoolDataSource extends AS400ConnectionPoolAdapter implements DataSource {
 
 	private AS400JDBCConnectionPoolDataSource dsource;
 
-	// FOR TEST ONLY
-	AS400ConnectionPoolDataSource() {
-		setMaxConnections(DEFAULT_POOL_SIZE);
+	private AS400ConnectionPoolDataSource(AS400JDBCConnectionPoolDataSource dsource) {
+		super(new AS400JDBCConnectionPool(dsource));
+		this.dsource = dsource;
 	}
 
 	public AS400ConnectionPoolDataSource(String system) {
-		dsource = new AS400JDBCConnectionPoolDataSource(system);
-		initialize();
+		this(new AS400JDBCConnectionPoolDataSource(system));
 	}
 
 	public AS400ConnectionPoolDataSource(String system, String username, String password) {
-		dsource = new AS400JDBCConnectionPoolDataSource(system, username, password);
-		initialize();
-	}
-
-	public AS400ConnectionPoolDataSource(String system, String username, String password, String keyRingName,
-			String keyRingPassword) {
-		dsource = new AS400JDBCConnectionPoolDataSource(system, username, password, keyRingName, keyRingPassword);
-		initialize();
-	}
-
-	private void initialize() {
-		cpool = new AS400JDBCConnectionPool(dsource);
+		this(new AS400JDBCConnectionPoolDataSource(system, username, password));
 	}
 
 	// should this be public allowing DataSource parameterization or use the setter
@@ -68,26 +59,23 @@ public class AS400ConnectionPoolDataSource extends AS400ConnectionPoolAdapter im
 
 	@Override
 	public Logger getParentLogger() throws SQLFeatureNotSupportedException {
-		// return dsource.getParentLogger();
-		throw new SQLFeatureNotSupportedException();
+		return dsource.getParentLogger();
 	}
 
 	@Override
 	public <T> T unwrap(Class<T> iface) throws SQLException {
-		// return dsource.unwrap(iface);
-		throw new SQLFeatureNotSupportedException();
+		return dsource.unwrap(iface);
 	}
 
 	@Override
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
-		// return dsource.isWrapperFor(iface);
-		throw new SQLFeatureNotSupportedException();
+		return dsource.isWrapperFor(iface);
 	}
 
 	@Override
 	public Connection getConnection() throws SQLException {
 		try {
-			populate();
+			populate(); // lazy fill of pool
 			return cpool.getConnection();
 		} catch (ConnectionPoolException e) {
 			throw new SQLException(e);
@@ -97,17 +85,6 @@ public class AS400ConnectionPoolDataSource extends AS400ConnectionPoolAdapter im
 	@Override
 	public Connection getConnection(String username, String password) throws SQLException {
 		throw new SQLFeatureNotSupportedException();
-	}
-
-	private void populate() throws ConnectionPoolException {
-		if (!cpool.isInUse()) {
-			synchronized (cpool) {
-				int max = getMaxConnections();
-				int min = getMinConnections();
-				int size = Math.min(min > 0 ? min : DEFAULT_POOL_SIZE, max > 0 ? max : 0);
-				cpool.fill(size);
-			}
-		}
 	}
 
 	public void setDataSourceProperties(Properties properties) {

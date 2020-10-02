@@ -1,4 +1,4 @@
-package com.ibm.as400.access;
+package io.github.jt400.access;
 
 interface ConnectionPoolDataSource {
 
